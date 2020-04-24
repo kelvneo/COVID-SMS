@@ -4,3 +4,7 @@ jspm_packages
 
 # Serverless directories
 .serverless
+
+# Push to server scripts
+/dev.ps1
+/prod.ps1

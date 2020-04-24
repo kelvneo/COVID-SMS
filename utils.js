@@ -25,3 +25,13 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
     console.error(err);
   }); 
 }
+
+module.exports.cleanPhoneNumbers = (phoneNumbers) => {
+  const spaceStrip = /(\s|\+)/gi;
+  const legitPhoneCheck = /^(65)??[89]\d{7}$/gi;
+  return phoneNumbers.map((val) => val.replace(spaceStrip, '')).filter((val) => val.match(legitPhoneCheck)).map((val) => {
+    if (!val.startsWith('65')) {
+      return '65' + val;
+    } return val;
+  });
+}

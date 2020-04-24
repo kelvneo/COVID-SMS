@@ -30,6 +30,9 @@ provider:
     DYNAMODB_WILDCARD_TABLE: ${self:service}-*-${opt:stage, self:provider.stage}
     COMMZGATE_API_ID: ${env:COMMZGATE_API_ID}
     COMMZGATE_API_PASSWORD: ${env:COMMZGATE_API_PASSWORD}
+    DROPBOX_ACCESS_CODE: ${env:DROPBOX_ACCESS_CODE}
+    DROPBOX_MASTER_JSON: ${env:DROPBOX_MASTER_JSON}
+    DROPBOX_SWAB_JSON: ${env:DROPBOX_SWAB_JSON}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -83,10 +86,15 @@ functions:
           method: post
           cors: true
 
+  updateDropboxMaster:
+    handler: master/update.dropbox
+    events:
+      - schedule: cron(45 0 ? * * *)
+
   blastMaster:
     handler: master/blast.blast
     events:
-      - schedule: cron(0 1 ? * * *)
+      - schedule: cron(0 9 ? * * *)
   
   updateSwab:
     handler: swabs/update.update
@@ -95,6 +103,16 @@ functions:
           path: swab/{blastTime}
           method: post
           cors: true
+
+  updateDropbox2000Swab:
+    handler: swabs/update.dropbox2000
+    events:
+      - schedule: cron(50 11 ? * * *)
+
+  updateDropbox0800Swab:
+    handler: swabs/update.dropbox0800
+    events:
+      - schedule: cron(50 23 ? * * *)
 
   blast2000Swab:
     handler: swabs/blast.blast2000
@@ -105,6 +123,9 @@ functions:
     handler: swabs/blast.blast0800
     events:
       - schedule: cron(0 0 ? * * *)
+
+  dropboxTest:
+    handler: dropbox.fetch
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

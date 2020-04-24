@@ -24,8 +24,8 @@ module.exports.blast2000 = async (event, context) => {
     }
     const tmr = new Date();
     tmr.setDate(tmr.getDate() + 1);
-    const text = 'Frm: Medical Team\nGo to clinic (near rows 18 and 19, bed 1) for your swab test at 8am on '
-      + tmr.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"}) + ' (tomorrow)';
+    const text = 'Go to clinic (near rows 18 and 19, bed 1) for your swab test at 8am on '
+      + tmr.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"}) + ' (tomorrow)\n- Medical Team';
     const results = await utils.sendChunk(phoneNumbers, text);
     return {
       statusCode: 200,
@@ -63,8 +63,8 @@ module.exports.blast0800 = async (event, context) => {
       }
     }
     const tdy = new Date();
-    const text = 'Frm: Medical Team\nGo to clinic (near rows 18 and 19, bed 1) for your swab test at 10am on '
-      + tdy.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"}) + ' (today)';
+    const text = 'Go to clinic (near rows 18 and 19, bed 1) for your swab test at 10am on '
+      + tdy.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"}) + ' (today)\n- Medical Team';
     const results = await utils.sendChunk(phoneNumbers, text);
     return {
       statusCode: 200,
