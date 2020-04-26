@@ -4,21 +4,21 @@ This repository holds the code used for sending SMS reminders to patients in Sin
 ## Pre-requisites
 You will need the following accounts in order for this to work:
 - Amazon Web Services (Free Tier should be good enough)
-- Serverless with AWS IAM tokens
+- Serverless with AWS IAM tokens configured for Lambda and DynamoDB
 - Commzgate (We use them for our SMS provider)
 - Dropbox (For pulling JSON data before blasting SMS)
 
 ## Setup
 1. Modify [template.ps1](template.ps1) and key in the required information:
-    ```ps
+    ```ps1
     # Fill in everything here.
     $env:COMMZGATE_API_ID = ''
     $env:COMMZGATE_API_PASSWORD = ''
     $env:DROPBOX_ACCESS_CODE = ''
 
-    # The file path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
-    $env:DROPBOX_MASTER_JSON = ''
-    $env:DROPBOX_SWAB_JSON = ''
+    # The folder path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
+    $env:DROPBOX_MASTER_JSON_FOLDER = ''
+    $env:DROPBOX_SWAB_JSON_FOLDER = ''
 
     # Delete `--stage prod` if you are sending it to the dev server.
     serverless deploy --region ap-southeast-1 --stage prod
@@ -29,4 +29,8 @@ You will need the following accounts in order for this to work:
 You are done! Check your AWS Lambda & AWS DynamoDB to see if the functions and tables are created properly.
 
 ## Endpoints
-TODO
+
+
+## Credits
+- Kelvin [@kelvneo](https://github.com/kelvneo)
+- Terence [@terenceboey](https://github.com/terenceboey)

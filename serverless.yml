@@ -32,7 +32,7 @@ provider:
     COMMZGATE_API_PASSWORD: ${env:COMMZGATE_API_PASSWORD}
     DROPBOX_ACCESS_CODE: ${env:DROPBOX_ACCESS_CODE}
     DROPBOX_MASTER_JSON: ${env:DROPBOX_MASTER_JSON}
-    DROPBOX_SWAB_JSON: ${env:DROPBOX_SWAB_JSON}
+    DROPBOX_SWAB_JSON_FOLDER: ${env:DROPBOX_SWAB_JSON_FOLDER}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -78,51 +78,61 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  updateMaster:
-    handler: master/update.update
-    events:
-      - http:
-          path: master
-          method: post
-          cors: true
-
-  updateDropboxMaster:
-    handler: master/update.dropbox
-    events:
-      - schedule: cron(45 0 ? * * *)
-
-  blastMaster:
-    handler: master/blast.blast
-    events:
-      - schedule: cron(0 9 ? * * *)
-  
-  updateSwab:
-    handler: swabs/update.update
-    events:
-      - http:
-          path: swab/{blastTime}
-          method: post
-          cors: true
-
-  updateDropbox2000Swab:
-    handler: swabs/update.dropbox2000
-    events:
-      - schedule: cron(50 11 ? * * *)
-
-  updateDropbox0800Swab:
-    handler: swabs/update.dropbox0800
-    events:
-      - schedule: cron(50 23 ? * * *)
-
   blast2000Swab:
-    handler: swabs/blast.blast2000
+    handler: swabs/dropbox.blast2000
     events:
       - schedule: cron(0 12 ? * * *)
 
-  blast0800Swab:
-    handler: swabs/blast.blast0800
+  blast1000Swab:
+    handler: swabs/dropbox.blast1000
     events:
-      - schedule: cron(0 0 ? * * *)
+      - schedule: cron(0 2 ? * * *)
+
+  # updateMaster:
+  #   handler: master/update.update
+  #   events:
+  #     - http:
+  #         path: master
+  #         method: post
+  #         cors: true
+
+  # updateDropboxMaster:
+  #   handler: master/update.dropbox
+  #   events:
+  #     - schedule: cron(45 0 ? * * *)
+
+  # blastMaster:
+  #   handler: master/blast.blast
+  #   events:
+  #     - schedule: cron(0 1 ? * * *)
+  
+  # updateSwab:
+  #   handler: swabs/update.update
+  #   events:
+  #     - http:
+  #         path: swab/{blastTime}
+  #         method: post
+  #         cors: true
+
+  # updateDropbox2000Swab:
+  #   handler: swabs/update.dropbox2000
+  #   events:
+  #     - schedule: cron(50 11 ? * * *)
+
+  # updateDropbox1000Swab:
+  #   handler: swabs/update.dropbox1000
+  #   events:
+  #     - schedule: cron(50 1 ? * * *)
+
+  # blast2000Swab:
+  #   handler: swabs/blast.blast2000
+  #   events:
+  #     - schedule: cron(0 12 ? * * *)
+
+  # blast1000Swab:
+  #   handler: swabs/blast.blast1000
+  #   events:
+  #     - schedule: cron(0 2 ? * * *)
 
   dropboxTest:
     handler: dropbox.fetch

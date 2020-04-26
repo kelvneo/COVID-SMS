@@ -23,6 +23,7 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
     }))
   )).catch((err) => {
     console.error(err);
+    throw err;
   }); 
 }
 

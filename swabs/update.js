@@ -3,6 +3,10 @@ const AWS = require('aws-sdk');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+const fetch = require('isomorphic-fetch')
+const Dropbox = require('dropbox').Dropbox;
+const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fetch})
+
 module.exports.update = async (event, context) => {
   const data = JSON.parse(event.body);
   return await this.common(data, event.pathParameters.blastTime);

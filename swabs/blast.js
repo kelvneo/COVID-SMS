@@ -63,7 +63,7 @@ module.exports.blast0800 = async (event, context) => {
       }
     }
     const tdy = new Date();
-    const text = 'Go to clinic (near rows 18 and 19, bed 1) for your swab test at 10am on '
+    const text = 'Go to clinic (near rows 18 and 19, bed 1) for your swab test at 11am on '
       + tdy.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"}) + ' (today)\n- Medical Team';
     const results = await utils.sendChunk(phoneNumbers, text);
     return {
