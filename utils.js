@@ -10,7 +10,7 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
   for (var i = 0; i < phoneNumbers.length; i += chunkSize) {
     phoneChunks.push(phoneNumbers.slice(i, i + chunkSize).join(","));
   }
-
+  console.log(`Sending '${text}' to ${phoneNumbers.length} phone numbers...`);
   return await Promise.all(phoneChunks.map((val) => 
     axios.post('https://www.commzgate.net/gateway/SendBatchMsg.php', querystring.stringify({
       'ID': COMMZGATE_API_ID,
@@ -19,7 +19,7 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
       'Mobile': val,
       'Batch': 'true',
       'Type': 'A',
-      'Message': text
+      'Message': text + '\n- Medical Team'
     }))
   )).catch((err) => {
     console.error(err);
@@ -36,3 +36,23 @@ module.exports.cleanPhoneNumbers = (phoneNumbers) => {
     } return val;
   });
 }
+
+// Thanks StackOverflow
+String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
+function () {
+    "use strict";
+    var str = this.toString();
+    if (arguments.length) {
+        var t = typeof arguments[0];
+        var key;
+        var args = ("string" === t || "number" === t) ?
+            Array.prototype.slice.call(arguments)
+            : arguments[0];
+
+        for (key in args) {
+            str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
+        }
+    }
+
+    return str;
+};

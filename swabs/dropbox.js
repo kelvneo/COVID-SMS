@@ -8,53 +8,65 @@ const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fe
 
 const utils = require('../utils');
 
-async function pullSwabData () {
+async function pullSwabData (paramsMsg) {
   try {
     console.log('Pulling swab data from Dropbox...');
     const folder = await dbx.filesListFolder({
       path: process.env.DROPBOX_SWAB_JSON_FOLDER
     });
-    const data = {};
-    for (const fileMetadata of folder.entries) {
-      if (fileMetadata.is_downloadable && fileMetadata.path_lower.endsWith('.json')) {
-        console.log(`Downloading "${fileMetadata.path_lower}"...`);
-        const file = await dbx.filesDownload({
-          path: fileMetadata.path_lower
-        });
-        const temp = JSON.parse(file.fileBinary.toString());
-        for (const key in temp) {
-          data[key] = data[key] || [];
-          data[key].push(...temp[key])
+
+    // Filter out all .json files first, then download them
+    const res = (await Promise.all(folder.entries.filter((fm) => (fm.is_downloadable && fm.path_lower.endsWith('.json'))).map((fileMetadata) => {
+      console.log(`Downloading ${fileMetadata.path_lower}...`);
+      return dbx.filesDownload({
+        path: fileMetadata.path_lower
+      });
+    }))).flatMap((file) => {
+      console.log(`Parsing ${file.path_lower}...`);
+      try {
+        const data = JSON.parse(file.fileBinary.toString());
+        if (!data || !(data['msg']) || !(data['timings'])) {
+          throw new Error('Missing JSON keys!');
         }
+
+        // Format the message nicely
+        return Object.entries(data['timings']).map(([key, value]) => {
+          paramsMsg['time'] = `${key}hrs`;
+          return {
+            key: key,
+            msg: data['msg'].formatUnicorn(paramsMsg),
+            phoneNumbers: utils.cleanPhoneNumbers(value)
+          };
+        });
+      } catch (jsonErr) {
+        console.error(`${file.path_lower} is not a valid JSON file or are missing parameters.`);
+        console.error(jsonErr);
+        return null;
       }
-    }
-    return data;
+    })
+    return res.filter((val) => val);
   } catch (err) {
+    console.error(err);
     throw err;
   }
 }
 
 module.exports.blast2000 = async (event, context) => {
   try {
-    const data = await pullSwabData();
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    const dateString = date.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"});
 
-    console.log('Formatting payload...');
-    const results = await Promise.all(Object.entries(data).filter(([timing, rawPhoneNumbers]) => {
-      return (rawPhoneNumbers && Array.isArray(rawPhoneNumbers) && utils.cleanPhoneNumbers(rawPhoneNumbers).length)
-    }).map(([timing, rawPhoneNumbers]) => {
-      const phoneNumbers = utils.cleanPhoneNumbers(rawPhoneNumbers);
-      console.log(`${phoneNumbers.length} records found for ${timing}`);
-      
-      const tmr = new Date();
-      tmr.setDate(tmr.getDate() + 1);
-      const tmrString = tmr.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"});
-      const text = `Go to clinic (near rows 18 and 19, bed 1) for your swab test at ${timing}hrs tomorrow (${tmrString}).\n- Medical Team`;
-      
-      console.log(`Sending "${text}" to ${phoneNumbers.length} numbers...`)
-      return utils.sendChunk(phoneNumbers, text);
-    }));
+    const data = await pullSwabData({
+      date: `tomorrow (${dateString})`
+    });
 
-    const flResults = results.flatMap((val) => val.map((res) => res.data))
+    // Send the phone numbers out
+    const results = await Promise.all(data.map((val) => {
+      return utils.sendChunk(val.phoneNumbers, val.msg);
+    }))
+
+    const flResults = results.flatMap((val) => val.map((res) => res.data));
     console.log('Results: ');
     console.log(flResults);
     return {
@@ -71,26 +83,21 @@ module.exports.blast2000 = async (event, context) => {
 
 module.exports.blast1000 = async (event, context) => {
   try {
-    const data = await pullSwabData();
+    const date = new Date();
+    const dateString = date.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"});
 
-    console.log('Formatting payload...');
-    const results = await Promise.all(Object.entries(data).filter(([timing, rawPhoneNumbers]) => {
-      return (rawPhoneNumbers && Array.isArray(rawPhoneNumbers) && utils.cleanPhoneNumbers(rawPhoneNumbers).length &&
-        Number.isInteger(timing) && parseInt(timing) > 1000);
-    }).map(([timing, rawPhoneNumbers]) => {
-      const phoneNumbers = utils.cleanPhoneNumbers(rawPhoneNumbers);
-      console.log(`${phoneNumbers.length} records found for ${timing}`);
-      
-      const tmr = new Date();
-      tmr.setDate(tmr.getDate() + 1);
-      const tmrString = tmr.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"});
-      const text = `Go to clinic (near rows 18 and 19, bed 1) for your swab test at ${timing}hrs today (${tmrString}).\n- Medical Team`;
-      
-      console.log(`Sending "${text}" to ${phoneNumbers.length} numbers...`)
-      return utils.sendChunk(phoneNumbers, text);
-    }));
+    const data = await pullSwabData({
+      date: `today (${dateString})`
+    });
 
-    const flResults = results.flatMap((val) => val.map((res) => res.data))
+    // Filter out the timings before 10AM, and send the phone numbers out.
+    const results = await Promise.all(data.filter((val) => {
+      return (Number.isInteger(val.key) && parseInt(val.key) > 1000);
+    }).map((val) => {
+      return utils.sendChunk(val.phoneNumbers, val.msg);
+    }))
+
+    const flResults = results.flatMap((val) => val.map((res) => res.data));
     console.log('Results: ');
     console.log(flResults);
     return {
