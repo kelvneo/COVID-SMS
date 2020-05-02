@@ -19,7 +19,7 @@ module.exports.blast = async (event, context) => {
         })
       }
     }
-    const text = 'Please be reminded to do your daily vitals taking at the booth by 4pm today. Thank you!\n- Medical Team';
+    const text = 'Please be reminded to do your daily vitals taking at the booth by 4pm today. Thank you!';
     const results = await utils.sendChunk(phoneNumbers, text);
     return {
       statusCode: 200,

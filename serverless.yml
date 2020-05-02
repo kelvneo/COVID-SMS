@@ -78,15 +78,15 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  blast2000Swab:
-    handler: swabs/dropbox.blast2000
-    events:
-      - schedule: cron(0 12 ? * * *)
+  # blast2000Swab:
+  #   handler: swabs/dropbox.blast2000
+  #   events:
+  #     - schedule: cron(0 12 ? * * *)
 
-  blast1000Swab:
-    handler: swabs/dropbox.blast1000
-    events:
-      - schedule: cron(0 2 ? * * *)
+  # blast1000Swab:
+  #   handler: swabs/dropbox.blast1000
+  #   events:
+  #     - schedule: cron(0 2 ? * * *)
 
   # updateMaster:
   #   handler: master/update.update
@@ -100,6 +100,12 @@ functions:
   #   handler: master/update.dropbox
   #   events:
   #     - schedule: cron(45 0 ? * * *)
+
+  blastMaster:
+    handler: master/dropbox.blast
+    events:
+      - schedule: cron(0 0 ? * * *)
+      - schedule: cron(0 5 ? * * *)
 
   # blastMaster:
   #   handler: master/blast.blast
