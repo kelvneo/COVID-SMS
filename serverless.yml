@@ -106,6 +106,8 @@ functions:
     events:
       - schedule: cron(0 0 ? * * *)
       - schedule: cron(0 5 ? * * *)
+  generalDropboxBlast:
+    handler: general/dropbox.blast
 
   # blastMaster:
   #   handler: master/blast.blast
