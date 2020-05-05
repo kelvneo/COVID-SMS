@@ -1,12 +1,10 @@
 'use strict';
-const AWS = require('aws-sdk');
-const utils = require('../utils');
-
+// const AWS = require('aws-sdk');
+// const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const fetch = require('isomorphic-fetch')
 const Dropbox = require('dropbox').Dropbox;
 const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fetch})
-
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const utils = require('../utils');
 
 module.exports.blast = async (event, context) => {
   try {

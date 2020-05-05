@@ -1,7 +1,6 @@
 'use strict';
-const AWS = require('aws-sdk');
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
-
+// const AWS = require('aws-sdk');
+// const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const fetch = require('isomorphic-fetch')
 const Dropbox = require('dropbox').Dropbox;
 const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fetch})

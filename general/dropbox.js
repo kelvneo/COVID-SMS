@@ -9,9 +9,6 @@ const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fe
 const utils = require('../utils');
 
 async function pullFromFolder (path) {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  const tmrString = date.toLocaleDateString('en-GB', { day: "numeric", month: "short", year: "2-digit"});
   try {
     console.log('Pulling data from Dropbox...');
     // Get the files in the folder
@@ -60,15 +57,22 @@ async function pullFromFile (path) {
       throw new Error(`${file.path_lower} does not contain required JSON keys!`);
     }
 
-    return Object.entries(data['data'])
-      .map(([key, value]) => [utils.cleanPhoneNumber(key), value])
-      .filter(([key, value]) => key)
-      .map(([key, value]) => {
-        return {
-          phoneNumber: key,
-          text: data['msg'].formatUnicorn(value)
-        };
-      });
+    // return Object.entries(data['data'])
+    //   .map(([key, value]) => [utils.cleanPhoneNumber(key), value])
+    //   .filter(([key, value]) => key)
+    //   .map(([key, value]) => {
+    //     return {
+    //       phoneNumber: key,
+    //       text: data['msg'].formatUnicorn(value)
+    //     };
+    //   });
+    return data['data'].map((value) => {
+      const phoneNumber = utils.cleanPhoneNumber(value['phoneNumber']);
+      return {
+        phoneNumber: phoneNumber,
+        text: data['msg'].formatUnicorn(value)
+      }
+    }).filter(value => value.phoneNumber);
   } catch (err) {
     // This error may occur when the JSON is invalid or the file has failed to download.
     console.error(`For: ${path}`);
