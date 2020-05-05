@@ -97,13 +97,11 @@ module.exports.blast = async (event, context) => {
     const results = await Promise.all(payload.map((val) => {
       return utils.sendMsg(val.phoneNumber, val.text);
     }));
-    
-    const flResults = results.flatMap((val) => val.map((res) => res.data));
-    console.log(`Results: ${flResults.length} API calls made.`);
+    console.log(`Results: ${results.length} API calls made.`);
     return {
       statusCode: 200,
       body: JSON.stringify({
-        data: flResults
+        data: results.map((val) => val.data)
       })
     };
   } catch (err) {
