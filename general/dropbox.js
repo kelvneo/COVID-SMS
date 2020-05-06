@@ -95,21 +95,22 @@ module.exports.blast = async (event, context) => {
     payload = await pullFromFile(event.path);
   }
   
-  try {
-    console.log(`Sending custom messages to ${payload.length} numbers...`);
-    // TODO: Change to allSettled, and don't cause the whole operation to halt when an error occurs.
-    const results = await Promise.all(payload.map((val) => {
-      return utils.sendMsg(val.phoneNumber, val.text);
-    }));
-    console.log(`Results: ${results.length} API calls made.`);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        data: results.map((val) => val.data)
-      })
-    };
-  } catch (err) {
-    console.error(err);
-    throw err;
+  console.log(`Sending custom messages to ${payload.length} numbers...`);
+  const results = await Promise.allSettled(payload.map((val) => {
+    return utils.sendMsg(val.phoneNumber, val.text);
+  }));
+  console.log(`Results: ${results.length} API calls made.`);
+  const failedRecipients = results.filter((val) => val.status !== 'fulfilled');
+
+  if (failedRecipients.length) {
+    console.warn(`Unable to send to ${failedRecipients.length} numbers. Please review the following:`);
+    console.warn(failedRecipients.map(val => val.reason));
   }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      data: results.map((val) => val.value.data)
+    })
+  };
 }

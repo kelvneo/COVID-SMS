@@ -39,10 +39,17 @@ module.exports.blast = async (event, context) => {
     console.log(`Sending messages to ${phoneNumbers.length} numbers...`)
     const text = 'Please be reminded to do your daily vitals taking at the booth today. Thank you!';
     const results = await utils.sendChunk(phoneNumbers, text);
+
+    const failedChunks = results.filter(val => val.status !== 'fulfilled');
+    if (failedChunks.length) {
+      console.warn(`Unable to send ${failedChunks}.length. Please review the following:`);
+      console.warn(failedChunks.map(val => val.reason));
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify({
-        data: results.map(res => res.data)
+        data: results.map(res => res.value.data)
       })
     };
   } catch (err) {

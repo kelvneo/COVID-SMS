@@ -9,27 +9,97 @@ You will need the following accounts in order for this to work:
 - Dropbox (For pulling JSON data before blasting SMS)
 
 ## Setup
-1. Modify [template.ps1](template.ps1) and key in the required information:
-    ```ps1
-    # Fill in everything here.
-    $env:COMMZGATE_API_ID = ''
-    $env:COMMZGATE_API_PASSWORD = ''
-    $env:DROPBOX_ACCESS_CODE = ''
+1. Modify [template.ps1](template.ps1) or [template.sh](template.sh) and key in the required information:
 
-    # The folder path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
-    $env:DROPBOX_MASTER_JSON_FOLDER = ''
-    $env:DROPBOX_SWAB_JSON_FOLDER = ''
+    - Powershell
+        ```ps1
+        # Fill in everything here.
+        $env:COMMZGATE_API_ID = ''
+        $env:COMMZGATE_API_PASSWORD = ''
+        $env:DROPBOX_ACCESS_CODE = ''
 
-    # Delete `--stage prod` if you are sending it to the dev server.
-    serverless deploy --region ap-southeast-1 --stage prod
-    ```
-2. Rename [template.ps1](template.ps1) to `dev.ps1` or `prod.ps1`, whichever that suits your needs.
-3. Run the powershell script. **(Ensure you have allowed powershell scripts to run in Windows)**
+        # The file path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
+        $env:DROPBOX_MASTER_JSON = ''
+        $env:DROPBOX_SWAB_JSON_FOLDER = ''
+        $env:DROPBOX_MR_JSON_FOLDER = ''
+
+        # Delete `--stage prod` if you are sending it to the dev server.
+        serverless deploy --region ap-southeast-1 --stage prod
+        ```
+    - Shell Script
+        ```sh
+        # Fill in everything here.
+        COMMZGATE_API_ID=''
+        COMMZGATE_API_PASSWORD=''
+        DROPBOX_ACCESS_CODE=''
+
+        # The file path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
+        DROPBOX_MASTER_JSON=''
+        DROPBOX_SWAB_JSON_FOLDER=''
+        DROPBOX_MR_JSON_FOLDER=''
+
+        # Delete `--stage prod` if you are sending it to the dev server.
+        serverless deploy --region ap-southeast-1 --stage prod
+        ```
+2. Rename the template script to `dev` or `prod`, whichever that suits your needs.
+3. Run the script. **(Ensure you have allowed powershell scripts to run in Windows or given execute permissions for shell script)**
 
 You are done! Check your AWS Lambda & AWS DynamoDB to see if the functions and tables are created properly.
 
-## Endpoints
+## HTTP API Endpoints
+None as of now.
 
+## Sending Messages through Dropbox
+This section will detail steps to send messages from Dropbox. You will have to generate your own JSON file, and store it in Dropbox.
+
+### General Messages
+This function is for sending any general messages, with the added benefit of formatting using `{}`.
+
+#### JSON File
+To send formattable messages, generate your JSON in this format:
+```json
+{
+  "msg": "Hello {name}!",
+  "data": [
+    {
+      "name": "KELVIN NEO",
+      "phoneNumber": "91234567"
+    },
+    {
+      "name": "TERENCE BOEY",
+      "phoneNumber": "91234567"
+    }
+  ]
+}
+```
+**Ensure that all elements objects in the `data` array has `phoneNumber` value, otherwise it would be discarded**
+
+You may format your message by using `{}`, and also ensure that the key-value exists in each element of the `data` object.
+
+#### AWS Lambda Details 
+You are required to call the function in AWS Lambda with the following input parameters (set `folder` to `true` to read all `.json` files in the directory):
+```json
+{
+    "path": "/path/to/file_or_folder_in_dropbox",
+    "folder": false
+}
+```
+
+### Vitals Message
+This will send `Please be reminded to do your daily vitals taking at the booth today. Thank you!` to all phone numbers.
+
+#### JSON File
+Generate the JSON with this format:
+```json
+{
+    "phoneNumbers": [
+        "91234567"
+    ]
+}
+```
+
+#### AWS Lambda Details 
+Ensure the environment variable `DROPBOX_MASTER_JSON` is set to the Dropbox JSON file path before the function is executed.
 
 ## Credits
 - Kelvin [@kelvneo](https://github.com/kelvneo)

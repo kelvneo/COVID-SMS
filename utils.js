@@ -1,8 +1,14 @@
 'use strict';
 const querystring = require('querystring');
 const axios = require('axios');
+const axiosRetry = require('axios-retry');
 const COMMZGATE_API_ID = process.env.COMMZGATE_API_ID;
 const COMMZGATE_API_PASSWORD = process.env.COMMZGATE_API_PASSWORD;
+
+axiosRetry(axios, {
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay
+});
 
 module.exports.sendChunk = async (phoneNumbers, text) => {
   var phoneChunks = [];
@@ -12,7 +18,7 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
   }
   console.log(`Sending '${text}' to ${phoneNumbers.length} phone numbers...`);
   const newText = text + '\n- Medical Team';
-  return await Promise.all(phoneChunks.map((val) => 
+  return Promise.allSettled(phoneChunks.map((val) => 
     axios.post('https://www.commzgate.net/gateway/SendBatchMsg.php', querystring.stringify({
       'ID': COMMZGATE_API_ID,
       'Password': COMMZGATE_API_PASSWORD,
@@ -22,10 +28,7 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
       'Type': newText.length > 160 ? 'LA' : 'A',
       'Message': newText
     }))
-  )).catch((err) => {
-    console.error(err);
-    throw err;
-  }); 
+  ));
 }
 
 module.exports.sendMsg = async (phoneNumber, text) => {
@@ -53,6 +56,7 @@ module.exports.cleanPhoneNumber = (phoneNumber) => {
       return '65' + spaceless;
     } return spaceless;
   } else {
+    console.warn(`Invalid phone number: ${phoneNumber}`);
     return null;
   }
 }
