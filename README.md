@@ -27,7 +27,8 @@ You will need the following accounts in order for this to work:
         serverless deploy --region ap-southeast-1 --stage prod
         ```
     - Shell Script
-        ```sh
+        ```bash
+        #!/bin/bash
         # Fill in everything here.
         COMMZGATE_API_ID=''
         COMMZGATE_API_PASSWORD=''
@@ -46,13 +47,12 @@ You will need the following accounts in order for this to work:
 
 You are done! Check your AWS Lambda & AWS DynamoDB to see if the functions and tables are created properly.
 
-## HTTP API Endpoints
-None as of now.
-
 ## Sending Messages through Dropbox
 This section will detail steps to send messages from Dropbox. You will have to generate your own JSON file, and store it in Dropbox.
 
 ### General Messages
+_Lambda Function Name: [`covid-{stage}-generalDropboxBlast`](general/dropbox.js)_
+
 This function is for sending any general messages, with the added benefit of formatting using `{}`.
 
 #### JSON File
@@ -85,8 +85,11 @@ You are required to call the function in AWS Lambda with the following input par
 }
 ```
 
-### Vitals Message
-This will send `Please be reminded to do your daily vitals taking at the booth today. Thank you!` to all phone numbers.
+### Daily Vitals Message
+_Lambda Function Name: [`covid-{stage}-blastMaster`](master/dropbox.js)_
+
+This will send the following to all phone numbers:
+> Please be reminded to do your daily vitals taking at the booth today. Thank you!`
 
 #### JSON File
 Generate the JSON with this format:
@@ -99,7 +102,7 @@ Generate the JSON with this format:
 ```
 
 #### AWS Lambda Details 
-Ensure the environment variable `DROPBOX_MASTER_JSON` is set to the Dropbox JSON file path before the function is executed.
+Ensure the environment variable `DROPBOX_MASTER_JSON` is set to the path of the JSON file in Dropbox before the function is executed.
 
 ## Credits
 - Kelvin [@kelvneo](https://github.com/kelvneo)

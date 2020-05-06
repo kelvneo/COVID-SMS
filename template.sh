@@ -1,3 +1,4 @@
+#!/bin/bash
 # Fill in everything here.
 COMMZGATE_API_ID=''
 COMMZGATE_API_PASSWORD=''
