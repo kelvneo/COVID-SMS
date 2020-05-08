@@ -55,10 +55,10 @@ module.exports.cleanPhoneNumber = (phoneNumber) => {
     if (!spaceless.startsWith('65')) {
       return '65' + spaceless;
     } return spaceless;
-  } else {
+  } else if (phoneNumber.length) {
     console.warn(`Invalid phone number: ${phoneNumber}`);
-    return null;
   }
+  return null;
 }
 
 // Thanks StackOverflow

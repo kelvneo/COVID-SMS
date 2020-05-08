@@ -110,7 +110,7 @@ module.exports.blast = async (event, context) => {
   return {
     statusCode: 200,
     body: JSON.stringify({
-      data: results.map((val) => val.value.data)
+      data: results.filter((val) => val.status === 'fulfilled').map((val) => val.value.data)
     })
   };
 }
