@@ -1,6 +1,8 @@
 # COVID-19 Medical Team Expo 
 This repository holds the code used for sending SMS reminders to patients in Singapore Expo.
 
+It will be made defunct once an infrastructure centralizes and moves to telegram.
+
 ## Pre-requisites
 You will need the following accounts in order for this to work:
 - Amazon Web Services (Free Tier should be good enough)
@@ -50,7 +52,32 @@ You are done! Check your AWS Lambda & AWS DynamoDB to see if the functions and t
 ## Sending Messages through Dropbox
 This section will detail steps to send messages from Dropbox. You will have to generate your own JSON file, and store it in Dropbox.
 
-### General Messages
+### General Simple Messages
+_Lambda Function Name: [`covid-{stage}-generalDropboxBlastBulk`](general/dropbox.js)_
+
+This function is for sending a single general messages.
+
+#### JSON File
+To send formattable messages, generate your JSON in this format:
+```json
+{
+  "msg": "Please do your questionaire at https://example.com/.",
+  "phoneNumbers": [
+    "91234567",
+    "97654321"
+  ]
+}
+```
+
+#### AWS Lambda Details 
+You are required to call the function in AWS Lambda with the following input parameters:
+```json
+{
+    "path": "/path/to/file_in_dropbox"
+}
+```
+
+### General Formattable Messages
 _Lambda Function Name: [`covid-{stage}-generalDropboxBlast`](general/dropbox.js)_
 
 This function is for sending any general messages, with the added benefit of formatting using `{}`.
@@ -84,7 +111,6 @@ You are required to call the function in AWS Lambda with the following input par
     "folder": false
 }
 ```
-
 ### Daily Vitals Message
 _Lambda Function Name: [`covid-{stage}-blastMaster`](master/dropbox.js)_
 

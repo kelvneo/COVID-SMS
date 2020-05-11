@@ -7,6 +7,9 @@ const params = {
   TableName: process.env.DYNAMODB_MASTER_TABLE,
 };
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.blast = async (event, context) => {
   try {
     const dbRes = await dynamoDb.scan(params).promise();

@@ -4,6 +4,9 @@ const AWS = require('aws-sdk');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.blast2000 = async (event, context) => {
   const params = {
     TableName: process.env.DYNAMODB_SWAB_TABLE,
@@ -44,6 +47,9 @@ module.exports.blast2000 = async (event, context) => {
   }
 };
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.blast0800 = async (event, context) => {
   const params = {
     TableName: process.env.DYNAMODB_SWAB_TABLE,

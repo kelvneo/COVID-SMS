@@ -7,6 +7,9 @@ const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fe
 
 const utils = require('../utils');
 
+/**
+ * @deprecated Swab appointment reminders no longer required.
+ */
 async function pullSwabData (paramsMsg) {
   try {
     console.log('Pulling swab data from Dropbox...');
@@ -50,6 +53,9 @@ async function pullSwabData (paramsMsg) {
   }
 }
 
+/**
+ * @deprecated Swab appointment reminders no longer required.
+ */
 module.exports.blast2000 = async (event, context) => {
   try {
     const date = new Date();
@@ -80,6 +86,9 @@ module.exports.blast2000 = async (event, context) => {
   }
 };
 
+/**
+ * @deprecated Swab appointment reminders no longer required.
+ */
 module.exports.blast1000 = async (event, context) => {
   try {
     const date = new Date();

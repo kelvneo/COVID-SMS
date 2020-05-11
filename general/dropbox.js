@@ -8,6 +8,13 @@ const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fe
 
 const utils = require('../utils');
 
+/**
+ * Pulls all .JSON files from a Dropbox folder.
+ * 
+ * For the format of each file, please look at `pullFromFile` function
+ * 
+ * @param {string} path Absolute path to the Dropbox folder
+ */
 async function pullFromFolder (path) {
   try {
     console.log('Pulling data from Dropbox...');
@@ -41,6 +48,7 @@ async function pullFromFolder (path) {
  *    }
  *  }
  * }
+ * @param {string} path Absolute path to the Dropbox file.
  * ```
  */
 async function pullFromFile (path) {
@@ -81,6 +89,9 @@ async function pullFromFile (path) {
   }
 }
 
+/**
+ * 
+ */
 module.exports.blast = async (event, context) => {
   if (!event.path) {
     console.error('No path found!');
@@ -114,3 +125,56 @@ module.exports.blast = async (event, context) => {
     })
   };
 }
+
+
+module.exports.blastBulk = async (event, context) => {
+  try {
+    console.log(`Downloading from "${event.path}"`)
+    const file = await dbx.filesDownload({
+      path: event.path
+    });
+
+    console.log('Processing payload...')
+    const data = JSON.parse(file.fileBinary.toString());
+    if (!data.phoneNumbers || !Array.isArray(data.phoneNumbers)) {
+      console.error('No phone numbers found!');
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'No phone numbers found!'
+        })
+      };
+    }
+
+    const phoneNumbers = utils.cleanPhoneNumbers(data.phoneNumbers);
+    if (phoneNumbers.length === 0) {
+      console.error('Invalid phone numbers!');
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'Invalid phone numbers!'
+        })
+      };
+    }
+
+    console.log(`Sending messages to ${phoneNumbers.length} numbers...`)
+    const text = data.msg;
+    const results = await utils.sendChunk(phoneNumbers, text);
+
+    const failedChunks = results.filter(val => val.status !== 'fulfilled');
+    if (failedChunks.length) {
+      console.warn(`Unable to send ${failedChunks.length}. Please review the following:`);
+      console.warn(failedChunks.map(val => val.reason));
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        data: results.map(res => res.value.data)
+      })
+    };
+  } catch (err) {
+    console.error(err);
+  }
+};
+

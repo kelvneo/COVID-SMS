@@ -42,7 +42,7 @@ module.exports.blast = async (event, context) => {
 
     const failedChunks = results.filter(val => val.status !== 'fulfilled');
     if (failedChunks.length) {
-      console.warn(`Unable to send ${failedChunks}.length. Please review the following:`);
+      console.warn(`Unable to send ${failedChunks.length}. Please review the following:`);
       console.warn(failedChunks.map(val => val.reason));
     }
 

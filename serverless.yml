@@ -115,6 +115,8 @@ functions:
           input:
             path: ${env:DROPBOX_MR_JSON_FOLDER}
             folder: true
+  generalDropboxBlastBulk:
+    handler: general/dropbox.blastBulk
 
   # blastMaster:
   #   handler: master/blast.blast

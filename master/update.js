@@ -8,11 +8,17 @@ const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fe
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.update = async (event, context) => {
   const data = JSON.parse(event.body);
   return await this.common(data);
 };
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.dropbox = async (event, context) => {
   try {
     const file = await dbx.filesDownload({
@@ -25,6 +31,9 @@ module.exports.dropbox = async (event, context) => {
   }
 };
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 async function common (data)  {
   const timestamp = new Date().getTime();
   if (!data.phoneNumbers || !Array.isArray(data.phoneNumbers)) {

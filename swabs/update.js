@@ -7,11 +7,17 @@ const fetch = require('isomorphic-fetch')
 const Dropbox = require('dropbox').Dropbox;
 const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fetch})
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.update = async (event, context) => {
   const data = JSON.parse(event.body);
   return await this.common(data, event.pathParameters.blastTime);
 };
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.dropbox2000 = async (event, context) => {
   try {
     const file = await dbx.filesDownload({
@@ -24,6 +30,9 @@ module.exports.dropbox2000 = async (event, context) => {
   }
 }
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 module.exports.dropbox0800 = async (event, context) => {
   try {
     const file = await dbx.filesDownload({
@@ -36,6 +45,9 @@ module.exports.dropbox0800 = async (event, context) => {
   }
 }
 
+/**
+ * @deprecated No longer uses Amazon DynamoDB
+ */
 async function common (data, blastTime) {
   const timestamp = new Date().getTime();
   if (!data.phoneNumbers || !Array.isArray(data.phoneNumbers)) {
