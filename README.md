@@ -11,40 +11,8 @@ You will need the following accounts in order for this to work:
 - Dropbox (For pulling JSON data before blasting SMS)
 
 ## Setup
-1. Modify [template.ps1](template.ps1) or [template.sh](template.sh) and key in the required information:
-
-    - Powershell
-        ```ps1
-        # Fill in everything here.
-        $env:COMMZGATE_API_ID = ''
-        $env:COMMZGATE_API_PASSWORD = ''
-        $env:DROPBOX_ACCESS_CODE = ''
-
-        # The file path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
-        $env:DROPBOX_MASTER_JSON = ''
-        $env:DROPBOX_SWAB_JSON_FOLDER = ''
-        $env:DROPBOX_MR_JSON_FOLDER = ''
-
-        # Delete `--stage prod` if you are sending it to the dev server.
-        serverless deploy --region ap-southeast-1 --stage prod
-        ```
-    - Shell Script
-        ```bash
-        #!/bin/bash
-        # Fill in everything here.
-        COMMZGATE_API_ID=''
-        COMMZGATE_API_PASSWORD=''
-        DROPBOX_ACCESS_CODE=''
-
-        # The file path that the JSON data will be stored in your dropbox folder (e.g. /covid/master.json)
-        DROPBOX_MASTER_JSON=''
-        DROPBOX_SWAB_JSON_FOLDER=''
-        DROPBOX_MR_JSON_FOLDER=''
-
-        # Delete `--stage prod` if you are sending it to the dev server.
-        serverless deploy --region ap-southeast-1 --stage prod
-        ```
-2. Rename the template script to `dev` or `prod`, whichever that suits your needs.
+1. Rename the template scripts ([template.ps1](template.ps1) or [template.sh](template.sh)) to `dev` or `prod`, whichever that suits your needs.
+2. Modify the scripts and key in the required information.
 3. Run the script. **(Ensure you have allowed powershell scripts to run in Windows or given execute permissions for shell script)**
 
 You are done! Check your AWS Lambda & AWS DynamoDB to see if the functions and tables are created properly.
@@ -70,10 +38,11 @@ To send formattable messages, generate your JSON in this format:
 ```
 
 #### AWS Lambda Details 
-You are required to call the function in AWS Lambda with the following input parameters:
+You are required to call the function in AWS Lambda with the following input parameters (set `folder` to `true` to read all `.json` files in the directory)::
 ```json
 {
-    "path": "/path/to/file_in_dropbox"
+    "path": "/path/to/file_or_folder_in_dropbox",
+    "folder": false
 }
 ```
 
@@ -111,24 +80,6 @@ You are required to call the function in AWS Lambda with the following input par
     "folder": false
 }
 ```
-### Daily Vitals Message
-_Lambda Function Name: [`covid-{stage}-blastMaster`](master/dropbox.js)_
-
-This will send the following to all phone numbers:
-> Please be reminded to do your daily vitals taking at the booth today. Thank you!`
-
-#### JSON File
-Generate the JSON with this format:
-```json
-{
-    "phoneNumbers": [
-        "91234567"
-    ]
-}
-```
-
-#### AWS Lambda Details 
-Ensure the environment variable `DROPBOX_MASTER_JSON` is set to the path of the JSON file in Dropbox before the function is executed.
 
 ## Credits
 - Kelvin [@kelvneo](https://github.com/kelvneo)

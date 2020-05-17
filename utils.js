@@ -11,6 +11,10 @@ axiosRetry(axios, {
 });
 
 module.exports.sendChunk = async (phoneNumbers, text) => {
+  // Wacky time delay to prevent duplicate IDs
+  await new Promise(resolve => {
+    setTimeout(resolve, Math.random() * 500);
+  });
   var phoneChunks = [];
   const chunkSize = 1000;
   for (var i = 0; i < phoneNumbers.length; i += chunkSize) {
@@ -18,8 +22,8 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
   }
   console.log(`Sending '${text}' to ${phoneNumbers.length} phone numbers...`);
   const newText = text + '\n- Medical Team';
-  return Promise.allSettled(phoneChunks.map((val) => 
-    axios.post('https://www.commzgate.net/gateway/SendBatchMsg.php', querystring.stringify({
+  return Promise.allSettled(phoneChunks.map((val) => {
+    const qs = querystring.stringify({
       'ID': COMMZGATE_API_ID,
       'Password': COMMZGATE_API_PASSWORD,
       'Sender': 'MedicalTeam',
@@ -27,8 +31,10 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
       'Batch': 'true',
       'Type': newText.length > 160 ? 'LA' : 'A',
       'Message': newText
-    }))
-  ));
+    });
+    console.log(qs);
+    return axios.post('https://www.commzgate.net/gateway/SendBatchMsg.php', qs);
+  }));
 }
 
 module.exports.sendMsg = async (phoneNumber, text) => {

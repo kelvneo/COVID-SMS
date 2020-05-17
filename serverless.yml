@@ -101,11 +101,11 @@ functions:
   #   events:
   #     - schedule: cron(45 0 ? * * *)
 
-  blastMaster:
-    handler: master/dropbox.blast
-    events:
-      - schedule: cron(0 0 ? * * *)
-      - schedule: cron(0 5 ? * * *)
+  # blastMaster:
+  #   handler: master/dropbox.blast
+  #   events:
+  #     - schedule: cron(0 0 ? * * *)
+  #     - schedule: cron(0 5 ? * * *)
   generalDropboxBlast:
     handler: general/dropbox.blast
     events:
@@ -117,6 +117,24 @@ functions:
             folder: true
   generalDropboxBlastBulk:
     handler: general/dropbox.blastBulk
+    events:
+      - schedule:
+          rate: cron(10 0 ? * * *)
+          enabled: true
+          input:
+            path: ${env:DROPBOX_SURVEY_JSON}
+      - schedule:
+          rate: cron(0 0 ? * * *)
+          enabled: true
+          input:
+            path: ${env:DROPBOX_VITALS_JSON_FOLDER}
+            folder: true
+      - schedule:
+          rate: cron(0 5 ? * * *)
+          enabled: true
+          input:
+            path: ${env:DROPBOX_VITALS_JSON_FOLDER}
+            folder: true
 
   # blastMaster:
   #   handler: master/blast.blast
@@ -151,8 +169,8 @@ functions:
   #   events:
   #     - schedule: cron(0 2 ? * * *)
 
-  dropboxTest:
-    handler: dropbox.fetch
+  # dropboxTest:
+  #   handler: dropbox.fetch
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

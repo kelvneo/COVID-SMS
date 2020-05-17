@@ -129,38 +129,64 @@ module.exports.blast = async (event, context) => {
 
 module.exports.blastBulk = async (event, context) => {
   try {
-    console.log(`Downloading from "${event.path}"`)
-    const file = await dbx.filesDownload({
-      path: event.path
-    });
-
-    console.log('Processing payload...')
-    const data = JSON.parse(file.fileBinary.toString());
-    if (!data.phoneNumbers || !Array.isArray(data.phoneNumbers)) {
-      console.error('No phone numbers found!');
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: 'No phone numbers found!'
-        })
-      };
+    var files = [];
+    if (event.folder) {
+      // Get the files in the folder
+      console.log('Pulling data from Dropbox...');
+      const folder = await dbx.filesListFolder({
+        path: event.path
+      });
+      files = folder.entries.filter((fm) => (fm.is_downloadable && fm.path_lower.endsWith('.json'))).map(file_metadata => file_metadata.path_lower);
+    } else {
+      // Just add 1 file into the array
+      files.push(event.path);
     }
 
-    const phoneNumbers = utils.cleanPhoneNumbers(data.phoneNumbers);
-    if (phoneNumbers.length === 0) {
-      console.error('Invalid phone numbers!');
+    // Process individual files
+    const filesData = (await Promise.allSettled(files.map(path => {
+      console.log(`Downloading from "${path}"`)
+      return dbx.filesDownload({
+        path: path
+      });
+    }))).filter(val => val.status === 'fulfilled').map(val => {
+      const file = val.value;
+      console.log(`Processing '${file.path_lower}'`)
+
+      // Parse file as JSON, returning null to be discarded if does not fit criterias.
+      const data = JSON.parse(file.fileBinary.toString());
+      if (!data.phoneNumbers || !Array.isArray(data.phoneNumbers)) {
+        console.warn(`No phone numbers for '${file.path_lower}'`);
+        return null;
+      }
+      
+      const phoneNumbers = utils.cleanPhoneNumbers(data.phoneNumbers);
+      if (phoneNumbers.length === 0) {
+        console.warn(`Invalid phone numbers for '${file.path_lower}'`);
+        return null;
+      }
+
       return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: 'Invalid phone numbers!'
-        })
+        text: data.msg,
+        phoneNumbers: phoneNumbers
       };
+    }).filter(val => val); // Filter discards all invalid files
+
+    // Checks if there are any valid files left
+    if (filesData.length === 0) {
+      throw new Error('No files to send!');
+    } else if (files.length !== filesData.length) {
+      console.warn(`${files.length - filesData.length} will be excluded.`)
     }
 
-    console.log(`Sending messages to ${phoneNumbers.length} numbers...`)
-    const text = data.msg;
-    const results = await utils.sendChunk(phoneNumbers, text);
+    // Sends the messages out
+    const fileResults = (await Promise.allSettled(filesData.map(data => utils.sendChunk(data.phoneNumbers, data.text))));
+    const failedFileChunks = fileResults.filter(val => val.status !== 'fulfilled');
+    if (failedFileChunks.length) {
+      console.warn(`Unable to send ${failedFileChunks.length}. Please review the following:`);
+      console.warn(failedFileChunks.map(val => val.reason));
+    }
 
+    const results = fileResults.filter(val => val.status === 'fulfilled').flatMap(val => val.value);
     const failedChunks = results.filter(val => val.status !== 'fulfilled');
     if (failedChunks.length) {
       console.warn(`Unable to send ${failedChunks.length}. Please review the following:`);
@@ -170,11 +196,12 @@ module.exports.blastBulk = async (event, context) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        data: results.map(res => res.value.data)
+        data: results.filter(val => val.status === 'fulfilled').map(res => res.value.data)
       })
     };
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 

@@ -2,7 +2,7 @@ const fetch = require('isomorphic-fetch')
 const Dropbox = require('dropbox').Dropbox;
 const dbx = new Dropbox({accessToken: process.env.DROPBOX_ACCESS_CODE, fetch: fetch})
 
-const utils = require('./utils');
+const utils = require('../utils');
 
 module.exports.fetch = async (event, context) => {
   const date = new Date();
