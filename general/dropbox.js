@@ -118,10 +118,13 @@ module.exports.blast = async (event, context) => {
     console.warn(failedRecipients.map(val => val.reason));
   }
 
+  const resStrings = results.filter(val => val.status === 'fulfilled').map(res => res.value.data);
+  console.log(resStrings);
+
   return {
     statusCode: 200,
     body: JSON.stringify({
-      data: results.filter((val) => val.status === 'fulfilled').map((val) => val.value.data)
+      data: resStrings
     })
   };
 }
@@ -129,6 +132,11 @@ module.exports.blast = async (event, context) => {
 
 module.exports.blastBulk = async (event, context) => {
   try {
+    if (!event.path) {
+      console.error('No path found!');
+      throw Error('No path found!');
+    }
+  
     var files = [];
     if (event.folder) {
       // Get the files in the folder
@@ -173,7 +181,8 @@ module.exports.blastBulk = async (event, context) => {
 
     // Checks if there are any valid files left
     if (filesData.length === 0) {
-      throw new Error('No files to send!');
+      console.warn('No files to send!');
+      return {};
     } else if (files.length !== filesData.length) {
       console.warn(`${files.length - filesData.length} will be excluded.`)
     }
@@ -193,10 +202,13 @@ module.exports.blastBulk = async (event, context) => {
       console.warn(failedChunks.map(val => val.reason));
     }
 
+    const resStrings = results.filter(val => val.status === 'fulfilled').map(res => res.value.data);
+    console.log(resStrings);
+
     return {
       statusCode: 200,
       body: JSON.stringify({
-        data: results.filter(val => val.status === 'fulfilled').map(res => res.value.data)
+        data: resStrings
       })
     };
   } catch (err) {

@@ -32,7 +32,7 @@ module.exports.sendChunk = async (phoneNumbers, text) => {
       'Type': newText.length > 160 ? 'LA' : 'A',
       'Message': newText
     });
-    console.log(qs);
+    // console.log(qs);
     return axios.post('https://www.commzgate.net/gateway/SendBatchMsg.php', qs);
   }));
 }
